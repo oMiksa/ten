@@ -1,1 +1,2 @@
-# ten
+# Ten semester
+## Information theory
