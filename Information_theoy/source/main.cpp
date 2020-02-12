@@ -6,10 +6,9 @@
 #include <map>
 #include <vector>
 
-
-#define path2file "."
-
 #define register false
+#define space false
+std::string one_sym(",.");
 
 bool pred(const std::pair< std::string, int > &a, const std::pair< std::string, int > &b) {
     return a.second > b.second;
@@ -28,6 +27,13 @@ public:
     void add(std::string a) {
         if (!register) 
             std::transform(a.begin(), a.end(), a.begin(), (int (*)(int))std::tolower);
+
+        if (!space)
+            if (a == " ")
+                return;
+
+        if (one_sym.find(a) != -1)
+            a = "~";
 
         arraySymIter = arraySym.find(a);
         if (arraySymIter != arraySym.end())
@@ -75,15 +81,15 @@ public:
 
 int main(int argc, char const *argv[]) {
 
-    //std::ifstream text(argv[1]);
-    //std::string str;
+    std::ifstream text(argv[1]);
+    std::string str;
     Texter t;
-    //while (getline(text, str)) {
-    //    t.add(str);
-    //}
+    while (getline(text, str)) {
+        t.set_text(str);
+    }
     
-    t.set_text(std::string("Ttaweeea"), 1);
-    t.show_map();
+    //t.set_text(std::string("Ttaweeea"), 1);
+    //t.show_map();
     t.map2vec();
     t.sort_vec();
     t.show_vec();
@@ -91,6 +97,6 @@ int main(int argc, char const *argv[]) {
     
 
 
-    //text.close();
+    text.close();
     return 0;
 }
