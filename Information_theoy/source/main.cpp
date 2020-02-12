@@ -29,11 +29,14 @@ public:
             std::transform(a.begin(), a.end(), a.begin(), (int (*)(int))std::tolower);
 
         if (!space)
-            if (a == " ")
+            if (a.find(" "))
                 return;
 
-        if (one_sym.find(a) != -1)
-            a = "~";
+        for (auto i(one_sym.begin()); i != one_sym.end(); i++) {
+            int temp = a.find(*i);
+            if (temp != -1)
+                a[temp] = '~';
+        }
 
         arraySymIter = arraySym.find(a);
         if (arraySymIter != arraySym.end())
