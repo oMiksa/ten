@@ -9,9 +9,10 @@
 
 #define register false
 #define space false
+
 std::string one_sym(",.");
 
-bool pred(const std::pair< std::string, int > &a, const std::pair< std::string, int > &b) {
+bool pred(const std::pair<std::string, int > &a, const std::pair<std::string, int > &b) {
     return a.second > b.second;
 }
 
@@ -32,8 +33,16 @@ public:
         return size_txt;
     }
 
+    int get_count_sym() {
+        int r = 0;
+        for (auto i(arraySym.begin()); i != arraySym.end(); i++)
+            r += i->second;
+        
+        return r;
+    }
+
     void set_size_txt(int a) {
-        size_txt += a;
+        size_txt = a;
     }
 
     void add(std::string a) {
@@ -81,21 +90,23 @@ public:
     }
 
     void show_map() {
+        std::cout << arraySym.size() << std::endl;
         for (auto i = arraySym.begin(); i != arraySym.end(); i++)
             std::cout << i->first << " - " << i->second << std::endl;
     }
     
     void show_vec() {
+        std::cout << vecSym->size() << std::endl;
         for (auto i = vecSym->begin(); i != vecSym->end(); i++)
             std::cout << i->first << " - " << i->second << std::endl;
     }
 
-    double get_intr_txt() {
+    double get_intr_txt(double a) {
         double resoult(0);
         for (auto it_v = vecSym->begin(); it_v != vecSym->end(); it_v++) {
-            resoult += -log2(1.0 * it_v->second / get_size_txt());
+            resoult += -(1.0 * it_v->second / get_size_txt()) * log2(1.0 * it_v->second / get_size_txt());
         }
-        return resoult;
+        return resoult / a;
     }
 
     std::vector<std::pair<std::string, int>> get_vec() {
@@ -107,30 +118,48 @@ public:
     };
 };
 
+std::map<std::string, std::string> map_tree;
+
 class tree {
 public:
     tree *left;
     tree *right;
-    int code;
-    std::pair<std::string, int> data;
-
-    tree() {};
-    ~tree() {};
-};
-
-class fono {
-public:
+    std::string code;
     std::vector<std::pair<std::string, int>> *vec;
-    tree root;
 
-    fono(std::vector<std::pair<std::string, int>> a) {
-        vec = new auto(a);
+    tree(std::vector<std::pair<std::string, int>> v, std::string c = "") {
+        vec = new auto(v);
+        code = c;
+        if (vec->size() >= 2) {
+            auto mid = get_mid(vec->begin(), vec->end());
+            left = new tree(std::vector<std::pair<std::string, int>>(vec->begin(), mid), "0");
+            right = new tree(std::vector<std::pair<std::string, int>>(mid, vec->end()), "1");
+        }
+    };
+
+    ~tree() {
+        delete vec, left, right;
+    };
+
+    void show_vec_tree() {
+        std::cout << map_tree.size(); 
+        //for (auto it(vec_tree.begin()); it != vec_tree.end(); it++)
+          //  std::cout << it->first << " - " << it->second << std::endl;
+    }
+
+    void add_map_tree(std::string key, std::string d) {
+        map_tree.insert(std::pair<std::string, std::string>(d, key));
+    }
+
+    void creat_vect_tree(std::string s) {
+        if (left == NULL && right == NULL) {
+            add_map_tree(s + code, vec->begin()->first);
+        } else {
+            left->creat_vect_tree(s + code);
+            right->creat_vect_tree(s + code);
+        }
     }
     
-    ~fono() {
-        delete vec;
-    }
-
     auto sum_vec(std::vector<std::pair<std::string, int>>::iterator a, std::vector<std::pair<std::string, int>>::iterator b) {
         auto sum(0);
         for (;a != b; a++) {
@@ -139,7 +168,7 @@ public:
         return sum;
     }
 
-    auto get_mid(std::vector<std::pair<std::string, int>>::iterator a, std::vector<std::pair<std::string, int>>::iterator b) {
+    std::vector<std::pair<std::string, int>>::iterator get_mid(std::vector<std::pair<std::string, int>>::iterator a, std::vector<std::pair<std::string, int>>::iterator b) {
         auto mid = a + 1;
         while (sum_vec(a, mid) < sum_vec(mid, b))
             mid++;
@@ -147,31 +176,93 @@ public:
     }
 };
 
+class fono {
+public:
+    std::map<std::string, std::string> *vec;
+
+    fono(std::map<std::string, std::string> a) {
+        vec = new auto(a);
+    }
+    
+    ~fono() {
+        delete vec;
+    }
+
+    void show() {
+        for (auto i(vec->begin()); i != vec->end(); i++) {
+            std::cout << i->first << " - " << i->second << std::endl;
+        }
+    }
+
+    double get_max_H() {
+        return log2(1.0 * vec->size());
+    }
+
+    double get_R(double H) {
+        return 1 - H / get_max_H();
+    }
+
+    std::string encode_my(std::string str, int size = 1) {
+        std::string str_bit;
+        for (auto it_str(str.begin()); it_str != str.end() - size + 1; it_str++) {
+            auto it_map = vec->find(std::string(it_str, it_str + size));
+            if (it_map != vec->end()) {
+                str_bit += it_map->second;
+            }
+        }
+        return str_bit;
+    }
+
+    std::string decode_my(std::string a) {
+        std::string str(a);
+        std::string r("");
+        while (str != "") {
+            for (auto it(vec->begin()); it != vec->end(); it++)
+                if (!str.find(it->second)) {
+                    r += it->first;
+                    str = std::string(str.begin() + it->second.length(), str.end());
+                }
+        }
+        return r;
+    }
+
+};
 
 int main(int argc, char const *argv[]) {
-
+    int sym = 2;
+    if (argc != 2) return -1;
     std::ifstream text(argv[1]);
+    
     std::string str;
     Texter t;
     while (getline(text, str)) {
-        t.set_text(str);
-        //t.set_size_txt(t.get_size_txt() + str.length());
+        t.set_text(str, sym);
     }
-    
+    //t.set_size_txt(t.get_count_sym());
     //t.set_text(std::string("Ttaweeea"), 1);
     //t.show_map();
     t.map2vec();
     t.sort_vec();
-    t.show_vec();
+    //t.show_vec();
     std::cout << t.get_size_txt() << std::endl;  
     
-    std::cout << t.get_intr_txt() << std::endl;  
+    std::cout << t.get_intr_txt(1.0 * sym) << std::endl;  
     
-    fono f(t.get_vec());
-    std::cout << f.get_mid(f.vec->begin(), f.vec->end())->first << " - " << f.get_mid(f.vec->begin(), f.vec->end())->second << std::endl;
+    tree tr(t.get_vec());
+    tr.creat_vect_tree("");
+    //tr.show_vec_tree();
 
-    
-
+    fono f(map_tree);
+    //f.show();
+    //std::cout << f.decode_my(f.encode_my("xxj"));
+    std::cout << "izb = " << f.get_R(t.get_intr_txt(1.0 * sym)) << std::endl;
     text.close();
+    //std::ifstream text1(argv[1]);
+    //std::ofstream text_code(argv[2]);
+    //while (getline(text1, str)) {
+    //    text_code << f.encode_my(str, sym) << std::endl;
+    //}
+    //text_code.close();
+    //text1.close();
     return 0;
 }
